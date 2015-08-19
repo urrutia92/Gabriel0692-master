@@ -1,0 +1,42 @@
+---
+title: "HW2"
+author: "Gabriel Urrutia"
+date: "August 16, 2015"
+output: html_document
+---
+1. Flights at ABIA
+
+We begin by importing the ggplot2 library, as well as the ABIA csv file into our R file. We name it Airport and will use this name for the remainder of our exploratory analysis.
+```{r}
+library(ggplot2)
+Airport = read.csv("ABIA.csv", header = TRUE)
+```
+
+Next, we begin our exploratory analysis. The first question that we will explore is which is the most common reason for delays at the Austin-Bergstrom. In order to explore this, we will plot the different types of delay by time against departure delay by time.
+
+```{r, echo=FALSE}
+qplot(Airport$WeatherDelay, Airport$DepDelay)
+qplot(Airport$SecurityDelay, Airport$DepDelay)
+qplot(Airport$LateAircraftDelay, Airport$DepDelay)
+qplot(Airport$Month, Airport$WeatherDelay)
+qplot(Airport$CRSDepTime, Airport$DepDelay)
+
+```
+
+From the plots, we know that the time on the reason for delay (x-axis) will be lower than the total departure delay time (y-axis), because it does not account for all of the delay. As can be expected, there is a large number of points which will be around 0 for the reason for delay axis, because this factor in these cases does not explain the delay. We will interpret the type of delays with the least number of points at 0 on the x-axis and which have the steepest slopes to be the most common reason for delay. We find, as can be seen, that weather and late aircraft arrival are the most common reasons for delay. There could be some further attribution to weather if we assume that the flights coming from other airports also may be caused by weather. We can see that security is a relatively infrequent reason for delays. The same goes for other reasons such as taxi in or taxi out. Something surprising is that when plotting time of the year to weather delay, there doesn't seem to be a clear pattern as could be expected of higher delays in the winter months. There is the most delays in late winter and early spring and the least delays in the fall and early winter. Furthermore, we find that the flight delays peak during the day and less at night, since there is less air traffic. Finally, the actual airline has an impact, probably because some airlines fly to regions with worse weather conditions or also because of airline inefficiencies. Mesa Airlines has the most frequent high delays. And JetBlue also has high delay time. Southwest Airlines to Austin. Continental as well. B6 also has many delays. Low delay times were Northwest, US Airways and Frontier Airlines.
+
+
+3. Practice with association rule mining
+
+```{r}
+library(arules)
+groceries <- read.transactions("groceries.txt", format='basket', sep=',')
+groceries <- groceries[!duplicated(groceries)]
+grocrules <- apriori(groceries, parameter=list(support=.005, confidence=.5, maxlen=6))
+inspect(grocrules)
+inspect(subset(grocrules, subset=lift >3))
+inspect(subset(grocrules, subset=confidence > 0.7))
+inspect(subset(grocrules, subset=support > .01 & confidence > 0.6))
+```
+
+Here we choose to set our parameters from our groceries data set to include item sets which have a support of at least 0.005, a confidence level of at least 0.5 and that are of a length of no more than 6 items in a given set. We choose this because item sets which occur less than 0.5% of the time may be too small in number to have statistically significant findings, but mainly because we want to narrow our search to the market baskets which customers are more frequently consuming to better optimize our prediction for a higher number of individuals. We set the confidence level to a minimum of 50% to ensure that our predictions are modestly accurate, while still ensuring a larger set of item sets to work with. Next, we set the max length to be 6, to simplify our predictions and make them on less input variables. From here we want to choose to analyze a subset of lift greater than 3. This provides us with a list of 6 item set to item predictions that have a relatively high confidence level, while ensuring a low support level. We then select a subset of confidence level greater than 70%. We do this to find the item sets that have a very high confidence level but are not captured under the previous subset because their support is high. Lastly, we choose a subset that contains all item sets of at least 1% support level that also have an intermediate confidence level of 60%, to highlight item sets among the most commonly purchased, which also can tell a meaningful story. One discovery from our model is that when customers purchase tropical fruit, whole milk and either curds or whipped cream, they are likely to purchase yogurt as well. Another discovery is that customers oten purchase citrus fruit, root vegetables, tropical fruit and other vegetables together. More specifically, the presence of three of the above in a market basket can often predict the fourth. From our last subset, we find 4 distinct market baskets which all predict milk in the basket. Although milk is a fairly popular item to be consumed and therefore must be understood as such when reporting these results, we still find that purchases of vegetables, tropical fruits or other dairy products often predict purchases of milk as well.
